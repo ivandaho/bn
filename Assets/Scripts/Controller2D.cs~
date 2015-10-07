@@ -3,6 +3,12 @@ using System.Collections;
 
 public class Controller2D : RaycastController {
 	
+    // buttonpressing stuff
+    SequenceInfo sequence;
+    bool printed = false;
+    bool generated = false;
+    bool donepressing = false;
+        
 	float maxClimbAngle = 80;
 	float maxDescendAngle = 80;
 	
@@ -14,6 +20,7 @@ public class Controller2D : RaycastController {
 	public override void Start() {
 		base.Start ();
 		collisions.faceDir = 1;
+
 	}
     
 	public void Move(Vector3 velocity, bool standingOnPlatform = false) {
@@ -44,6 +51,10 @@ public class Controller2D : RaycastController {
 		if (standingOnPlatform) {
 			collisions.below = true;
 		}
+        if (donepressing) {
+            velocity = collisions.velocityOld;
+        }
+           
 	}
 
 	void HorizontalCollisions(ref Vector3 velocity) {
@@ -62,6 +73,15 @@ public class Controller2D : RaycastController {
 			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength,Color.red);
 
 			if (hit) {
+                if (hit.collider.tag == "Checker") {
+                    generateSequence();
+                    generated = true;
+                    if (!donepressing) {
+                        velocity.x = 0;
+                        velocity.y = 0;
+                    }
+                    continue;
+                }
 
 				if (hit.distance == 0) {
 					continue;
@@ -111,6 +131,11 @@ public class Controller2D : RaycastController {
 			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength,Color.red);
 
 			if (hit) {
+                if (hit.collider.tag == "Checker") {
+                    generateSequence();
+                    generated = true;
+                    continue;
+                }
                 if (hit.collider.tag == "Through") {
                     if (directionY == 1 || hit.distance == 0) {
                         continue;
@@ -193,6 +218,106 @@ public class Controller2D : RaycastController {
     void ResetFallingThroughPlatform() {
         collisions.fallingThroughPlatform = false;
     }
+
+    void Update() {
+        if(generated) {
+            if (sequence.pressProgress == 0) {
+                CheckInput(sequence.buttonChain.Substring(0,1));
+            } else if (sequence.pressProgress == 1) {
+                CheckInput(sequence.buttonChain.Substring(1,1));
+            } else if (sequence.pressProgress == 2) {
+                CheckInput(sequence.buttonChain.Substring(2,1));
+            } else if (sequence.pressProgress == 3) {
+                CheckInput(sequence.buttonChain.Substring(3,1));
+            }
+
+            if (sequence.pressProgress == sequence.pressLength &&
+                    printed == false) {
+                print("sequence completed!!!");
+                printed = true;
+                donepressing = true;
+                //unPause(ref velocity);
+            }
+        }
+    }        
+    void unPause(ref Vector3 velocity) {
+            velocity = collisions.velocityOld;
+    }
+
+    void generateSequence() {
+        if(!generated) {
+            sequence.pressLength = 4;
+            sequence.pressProgress = 0;
+            RandButtonChain(sequence.pressLength);
+            generated = true;
+        }
+    }
+    void RandButtonChain(int n) {
+
+        // 1 = up, 2 = down, 3 = left, 4 = right
+        System.Random rnd = new System.Random();
+
+        for (int i=0; i<n; i++) {
+
+            int gen = rnd.Next(1,5); // does not include MaxValue
+
+            sequence.buttonChain = sequence.buttonChain + gen.ToString();
+        }
+        BuildRequiredPressSequence(n);
+    }
+
+    void BuildRequiredPressSequence(int n) {
+        for (int i=0; i<n; i++) {
+            if (sequence.buttonChain.Substring(i,1) == "1"){
+                print("UP");
+            } else if (sequence.buttonChain.Substring(i,1) == "2") {
+                print("DOWN");
+            } else if (sequence.buttonChain.Substring(i,1) == "3") {
+                print("LEFT");
+            } else if (sequence.buttonChain.Substring(i,1) == "4") {
+                print("RIGHT");
+            } 
+        }
+    }
+
+    void CheckInput(string s) {
+        if (Input.GetKeyDown(ConvertIndexToKey(s))) {
+            print(s + " key pressed");
+            sequence.pressProgress += 1;
+        }
+    }
+
+    string ConvertIndexToKey(string s) {
+        if (s == "1") {
+            return "w";
+        }
+        if (s == "2") {
+            return "s";
+        }
+        if (s == "3") {
+            return "a";
+        }
+        if (s == "4") {
+            return "d";
+        }
+        return "0";
+    }
+
+
+    void CheckRequiredPressSequence() {
+        if (Input.GetKeyDown(KeyCode.W)) {
+            print("w pressed, complete = true");
+            sequence.complete = true;
+        }
+    }
+
+    struct SequenceInfo {
+        public bool complete;
+        public string buttonChain;
+        public int pressLength;
+        public int pressProgress;
+    }
+    
 
 
 	public struct CollisionInfo {

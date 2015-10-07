@@ -39,7 +39,6 @@ public class ButtonPressing : MonoBehaviour {
 
     void RandButtonChain(int n) {
 
-        int done = 0;
         // 1 = up, 2 = down, 3 = left, 4 = right
         System.Random rnd = new System.Random();
 
