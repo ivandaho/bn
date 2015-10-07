@@ -34,6 +34,9 @@ public class ButtonPressing : MonoBehaviour {
 
     }
 
+    //test this line
+    //second line
+
     void RandButtonChain(int n) {
 
         int done = 0;
@@ -41,6 +44,7 @@ public class ButtonPressing : MonoBehaviour {
         System.Random rnd = new System.Random();
 
         for (int i=0; i<n; i++) {
+
             int gen = rnd.Next(1,5); // does not include MaxValue
 
             sequence.buttonChain = sequence.buttonChain + gen.ToString();
