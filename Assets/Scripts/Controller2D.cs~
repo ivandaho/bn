@@ -33,6 +33,8 @@ public class Controller2D : RaycastController {
 		collisions.velocityOld = velocity;
         playerInput = input;
 
+
+
 		if (velocity.x != 0) {
 			collisions.faceDir = (int)Mathf.Sign(velocity.x);
 		}
@@ -42,6 +44,7 @@ public class Controller2D : RaycastController {
 		}
 
 		HorizontalCollisions (ref velocity);
+
 		if (velocity.y != 0) {
 			VerticalCollisions (ref velocity);
 		}
@@ -73,19 +76,17 @@ public class Controller2D : RaycastController {
 			Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLength,Color.red);
 
 			if (hit) {
+
                 if (hit.collider.tag == "Checker") {
                     generateSequence();
                     generated = true;
-                    if (!donepressing) {
-                        velocity.x = 0;
-                        velocity.y = 0;
-                    }
                     continue;
                 }
 
 				if (hit.distance == 0) {
 					continue;
 				}
+
 			
 				float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
 
@@ -131,6 +132,12 @@ public class Controller2D : RaycastController {
 			Debug.DrawRay(rayOrigin, Vector2.up * directionY * rayLength,Color.red);
 
 			if (hit) {
+                if (hit.collider.tag == "Hurt") {
+                    if ( collisions.above) {
+                        print("hurt!");
+                    }
+                }
+
                 if (hit.collider.tag == "Checker") {
                     generateSequence();
                     generated = true;
